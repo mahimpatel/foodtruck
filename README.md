@@ -1,4 +1,4 @@
-Food Trucks - Uber
+Food Trucks SF
 -------------------
 Create a service that tells the user what types of food trucks might be found
 near a specific location on a map.
@@ -6,7 +6,7 @@ near a specific location on a map.
 The data is available on [DataSF](http://www.datasf.org/): [Food
 Trucks](https://data.sfgov.org/Permitting/Mobile-Food-Facility-Permit/rqzj-sfat)
 
-Food-Truck finder for UBER
+Food-Truck finder SF
 
 ![alt text](https://raw.githubusercontent.com/mahimpatel/foodtruck/master/ubertest/foodtruck/assets/screenshot.png "food truck screenshot")
 
@@ -14,27 +14,14 @@ PROJECT
 ======
 Food truck project using backbone.js for front-end MVC. It will list the food truck service when searched by address/zip 
 
-#### Example 
-###search fields:
-
+#### Example Search fields:
 sf
-
 geary st
-
 chinatown sf
-
 pier 39
-
 sf market st
-
 sf uber
-
 mission district
-
-GitHub
-======
-Project is hosted on repository GitHub at  https://github.com/mahimpatel/foodtruck.git
-ex: git clone https://github.com/mahimpatel/foodtruck.git
 
 PRODUCTION
 ======
