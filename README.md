@@ -14,13 +14,21 @@ PROJECT
 ======
 Food truck project using backbone.js for front-end MVC. It will list the food truck service when searched by address/zip 
 
-#### Example search fields:
+#### Example 
+###search fields:
+
 sf
+
 geary st
+
 chinatown sf
+
 pier 39
+
 sf market st
+
 sf uber
+
 mission district
 
 GitHub
