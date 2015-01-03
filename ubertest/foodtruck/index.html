@@ -1,0 +1,354 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+    <link rel="shortcut icon" href="assets/foodtruck.png" />
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <title>San Francisco Food Trucks | I Love Food Trucks</title>
+    <style type="text/css">
+        html {
+            height: 100%
+        }
+        body {
+            height: 100%;
+            margin: 0;
+            padding: 0
+        }
+        #map_canvas {
+            height: 100%
+        }
+        .overlay {
+            position: fixed;
+            background: rgba(255, 255, 255, 0.95);
+            border: 0px solid #aaa;
+            padding: 0px;
+            z-index: 5;
+        }
+        #search-area {
+            width: 100px;
+            white-space: nowrap;
+            right: 200px;
+            top: 40px;
+        }
+        #search-area div {
+            width: 30px;
+            height: 30px;
+            display: inline-block;
+            *display: inline;
+            zoom: 1;
+            margin: 0px;
+            outline: none;
+            vertical-align: top;
+        }
+        #listing {
+            left: 90px;
+            bottom: 10px;
+        }
+        #listing li {
+            list-style: none;
+            border-bottom: 1px solid #ccc;
+            padding: 10px;
+            cursor: pointer;
+        }
+        #listing li:hover {
+            background: #006;
+            color: #fff;
+        }
+        button {
+            background: #030;
+            color: #fef;
+            font-weight: bold;
+            border: 2px solid rgba(0, 0, 0, 0);
+            font-size: 14px;
+            padding: 10px 0px;
+            outline: none;
+        }
+        .bigText {
+            height: 38px;
+            width: 175px;
+        }
+    </style>
+
+    <script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?&sensor=false"></script>
+    <script type="text/javascript" src="lib/jquery-2.0.3.js"></script>
+    <script type="text/javascript" src="lib/underscore.js"></script>
+    <script type="text/javascript" src="lib/backbone.js"></script>
+    <script type="text/javascript" src="../lib/backbone.googlemaps.js"></script>
+</head>
+
+<body>
+
+    <script id="infoWindow-template" type="text/html">
+        <h2><%=title %></h2>
+        <p>Address:
+            <%=address %>
+        </p>
+        <p>Descripton:
+            <%=des %>
+        </p>
+        <br>
+        <br>
+    </script>
+
+    <div id="search-area" class="overlay">
+        <input class="bigText" id="address" type="text" placeholder="Find Food Truck in San Francisco">
+        <button id="foodtruck">Search</button>
+    </div>
+
+    <div id="map_canvas" style="width:100%; height:100%"></div>
+
+    <script type="text/javascript">
+        var foodtruck = [{
+            title: "No Food Truck Info available",
+            lat: 44.9796635,
+            lng: -93.2748776,
+            type: 'foodtruck'
+
+        }];
+
+        var App = {};
+        var latit;
+        var longit;
+        var geocoder;
+        var map;
+
+        App.Location = Backbone.GoogleMaps.Location.extend({
+            idAttribute: 'title',
+            defaults: {
+                lat: 45,
+                lng: -93
+            }
+        });
+
+        App.LocationCollection = Backbone.GoogleMaps.LocationCollection.extend({
+            model: App.Location
+        });
+
+        App.InfoWindow = Backbone.GoogleMaps.InfoWindow.extend({
+            template: '#infoWindow-template',
+
+            events: {
+                'mouseenter h2': 'logTest'
+            },
+
+            logTest: function() {
+                console.log('test in InfoWindow');
+            }
+        });
+
+        App.MarkerView = Backbone.GoogleMaps.MarkerView.extend({
+            infoWindow: App.InfoWindow,
+
+            initialize: function() {
+                _.bindAll(this, 'handleDragEnd');
+            },
+
+            mapEvents: {
+                'dragend': 'handleDragEnd',
+                dblclick: 'notifyuser'
+            },
+
+            handleDragEnd: function(e) {
+                alert('Dropped at: \n Lat: ' + e.latLng.lat() + '\n lng: ' + e.latLng.lng());
+            },
+
+            notifyuser: function() {
+                console.assert(this instanceof App.MarkerView);
+                alert('You double-clicked me!');
+                this.logIt('No further data to show')
+            },
+
+            logIt: function(message) {
+                console.assert(this instanceof App.MarkerView);
+                console.log(message);
+            }
+        });
+
+        App.FoodTruckMarker = App.MarkerView.extend({
+            overlayOptions: {
+                draggable: true,
+                icon: 'assets/foodtruck.png'
+            }
+        });
+
+        App.MarkerCollectionView = Backbone.GoogleMaps.MarkerCollectionView.extend({
+            markerView: App.MarkerView,
+
+            addChild: function(model) {
+                this.markerView = App.FoodTruckMarker;
+                Backbone.GoogleMaps.MarkerCollectionView.prototype.addChild.apply(this, arguments);
+            }
+        });
+
+        App.init = function() {
+            this.createMap();
+            this.places = new this.LocationCollection(foodtruck);
+            geocoder = new google.maps.Geocoder();
+
+            // Render Markers
+            var markerCollectionView = new this.MarkerCollectionView({
+                collection: this.places,
+                map: this.map
+            });
+            markerCollectionView.render();
+
+            // Render ListView
+            var listView = new App.ListView({
+                collection: this.places
+            });
+            listView.render();
+        }
+
+        App.createMap = function() {
+            var mapOptions = {
+                    center: new google.maps.LatLng(37.760707679452295, -122.44352074371022),
+                    zoom: 12,
+                    mapTypeId: google.maps.MapTypeId.ROADMAP
+                }
+                // Instantiate map
+            this.map = new google.maps.Map($('#map_canvas')[0], mapOptions);
+            map = this.map;
+        }
+
+        App.zipMap = function(callback) {
+            var zipCode = document.getElementById("address").value;
+            geocoder.geocode({
+                'address': zipCode
+            }, function(results, status) {
+                if (status == google.maps.GeocoderStatus.OK) {
+                    latit = results[0].geometry.location.lat();
+                    longit = results[0].geometry.location.lng();
+                    //center the map 
+                    map.setCenter(results[0].geometry.location);
+                    map.setZoom(14);
+                    var marker = new google.maps.Marker({
+                        map: map
+                    });
+                    callback(latit + " and" + longit);
+
+                } else if (status == google.maps.GeocoderStatus.ZERO_RESULTS) {
+                    alert("Please enter address/zip/city");
+                } else {
+                    alert("Cannot locate the address: Please try again" + status);
+                }
+            });
+        }
+
+        App.ItemView = Backbone.View.extend({
+            template: '<%=title %>',
+            tagName: 'li',
+
+            events: {
+                'mouseenter': 'selectItem',
+                'mouseleave': 'deselectItem'
+            },
+
+            initialize: function() {
+                _.bindAll(this, 'render', 'selectItem', 'deselectItem')
+
+                this.model.on("remove", this.close, this);
+            },
+
+            render: function() {
+                var html = _.template(this.template, this.model.toJSON());
+                this.$el.html(html);
+
+                return this;
+            },
+
+            selectItem: function() {
+                this.model.select();
+            },
+
+            deselectItem: function() {
+                this.model.deselect();
+            }
+        });
+
+        App.ListView = Backbone.View.extend({
+            tagName: 'ul',
+            className: 'overlay',
+            id: 'listing',
+
+            initialize: function() {
+                _.bindAll(this, "refresh", "addChild");
+
+                this.collection.on("reset", this.refresh, this);
+                //this.collection.on("add", this.addChild, this);
+
+                this.$el.appendTo('body');
+            },
+
+            render: function() {
+                this.collection.each(this.addChild);
+            },
+
+            addChild: function(childModel) {
+                var childView = new App.ItemView({
+                    model: childModel
+                });
+                childView.render().$el.appendTo(this.$el);
+            },
+
+            refresh: function() {
+                this.$el.empty();
+                this.render();
+            }
+        });
+
+        //$(document).ready(function() {
+        $(window).load(function() {
+            $('#address').val('');
+            App.init();
+            $('#foodtruck').click(function() {
+                App.places.reset(new Array({
+                    title: "No Food Truck Info available",
+                    lat: 44.9796635,
+                    lng: -93.2748776,
+                    type: 'foodtruck'
+                }));
+                App.zipMap(function(addr) {
+                    //alert(addr);
+                    $('#address').val('');
+                    App.BookModel = Backbone.Model.extend({
+                        urlRoot: "https://data.sfgov.org/resource/rqzj-sfat.json?$where=within_circle(location%2C%20" + latit + "%2C%20" + longit + "%2C%20600)&$select=location%2Cfooditems%2Clocationdescription%2Caddress"
+                    });
+                    var foodres = new App.BookModel();
+                    // The fetch below will perform GET 
+                    // The server should return the food truck service type, location from the database
+                    foodres.fetch({
+                        success: function(foodres) {
+                            var foodtruckarray = foodres.attributes;
+                            var arrayFinal = [];
+                            if (Object.keys(foodtruckarray).length == 0) {
+                                alert("No Food Truck Service Found in SF area, try again");
+                            } else {
+                                for (i = 0, len = Object.keys(foodtruckarray).length; i < len; i++) {
+                                    var title;
+                                    if (typeof foodtruckarray[i].fooditems !== "undefined") {
+                                        if (foodtruckarray[i].fooditems.indexOf(":") != -1) {
+                                            title = foodtruckarray[i].fooditems.split(":")[0];
+                                        } else {
+                                            title = foodtruckarray[i].fooditems;
+                                        }
+                                        arrayFinal.push({
+                                            'title': title,
+                                            'lat': foodtruckarray[i].location.latitude,
+                                            'lng': foodtruckarray[i].location.longitude,
+                                            'address': foodtruckarray[i].address,
+                                            'des': foodtruckarray[i].fooditems
+                                        });
+                                    }
+                                }
+                            }
+                            App.places.reset(arrayFinal);
+                        }
+                    })
+                });
+            });
+        });
+    </script>
+</body>
+
+</html>
