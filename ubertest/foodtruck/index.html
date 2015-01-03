@@ -4,6 +4,8 @@
 
 <head>
     <link rel="shortcut icon" href="assets/foodtruck.png" />
+    <link rel="apple-touch-icon" href="img/branding/uber-app-icon.jpg" />
+
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
     <title>San Francisco Food Trucks | I Love Food Trucks</title>
     <style type="text/css">
@@ -68,6 +70,25 @@
             height: 38px;
             width: 175px;
         }
+        #uber {
+            position: fixed;
+            left: 0;
+            right: 0;
+            top: -1px;
+            padding-top: 1px;
+            height: 50px;
+            width: 100%;
+            z-index: 100;
+        }
+        .uber-icon {
+            padding: 15px 0;
+        }
+        .uber-icon img {
+            height: 25px;
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+        }
     </style>
 
     <script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?&sensor=false"></script>
@@ -90,7 +111,9 @@
         <br>
         <br>
     </script>
-
+    <div id="uber">
+        <div class="uber-icon"> <img src="assets/uber-logo-transparent.png" /> </div>
+    </div>
     <div id="search-area" class="overlay">
         <input class="bigText" id="address" type="text" placeholder="Find Food Truck in San Francisco">
         <button id="foodtruck">Search</button>
@@ -312,7 +335,7 @@
                     //alert(addr);
                     $('#address').val('');
                     App.BookModel = Backbone.Model.extend({
-                        urlRoot: "https://data.sfgov.org/resource/rqzj-sfat.json?$where=within_circle(location%2C%20" + latit + "%2C%20" + longit + "%2C%20600)&$select=location%2Cfooditems%2Clocationdescription%2Caddress"
+                        urlRoot: "https://data.sfgov.org/resource/rqzj-sfat.json?$where=within_circle(location," + latit + "," + longit + ",600)&$select=location,fooditems,locationdescription,address"
                     });
                     var foodres = new App.BookModel();
                     // The fetch below will perform GET 
