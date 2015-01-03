@@ -16,11 +16,17 @@ Food truck project using backbone.js for front-end MVC. It will list the food tr
 
 #### Example Search fields:
 sf
+
 geary st
+
 chinatown sf
+
 pier 39
+
 sf market st
+
 sf uber
+
 mission district
 
 PRODUCTION
